@@ -2,7 +2,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, List, Optional
+
+from analysis import (
+    AnalysisRequest,
+    AnalysisResponse,
+    bucketize,
+    combine_add,
+    combine_sub,
+    moving_average,
+    parse_time_expr,
+    quasi_peak,
+)
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -39,6 +50,14 @@ class ApiDependencies:
     db: Database
     provisioning = ProvisioningService
     commands: CommandService
+
+class AnalysisSeriesRequest(BaseModel):
+    device_ids: List[str]
+    from_: str = Field(alias="from")
+    to: str
+    operation: str
+    params: Dict[str, Any] = {}
+    downsample_s: int = 1
 
 
 def create_app(deps: ApiDependencies) -> FastAPI:
@@ -104,5 +123,72 @@ def create_app(deps: ApiDependencies) -> FastAPI:
     def measure_stop():
         deps.commands.stop_measurement_all()
         return {"ok": True}
+    
+    @app.post("/analysis/series")
+    def analysis_series(req: AnalysisSeriesRequest):
+        ts_from = parse_time_expr(req.from_)
+        ts_to = parse_time_expr(req.to)
+        if ts_to < ts_from:
+            raise HTTPException(status_code=400, detail="to < from")
+
+        device_ids = [x for x in req.device_ids if x]
+        if not device_ids:
+            raise HTTPException(status_code=400, detail="device_ids leer")
+
+        op = req.operation.strip().lower()
+        ds = int(req.downsample_s or 1)
+
+        # Fetch + bucketize pro device
+        per_device: list[tuple[str, list[tuple[int, float]]]] = []
+        for did in device_ids:
+            pts = deps.db.fetch_measurements(did, ts_from, ts_to)
+            pts_b = bucketize(pts, ds)
+            per_device.append((did, pts_b))
+
+        scalar = None
+
+        # --- RAW: alle Serien zurückgeben ---
+        if op == "raw":
+            return {
+                "series_list": [
+                    {"name": did, "series": [{"ts": ts, "value": float(v)} for ts, v in pts]}
+                    for did, pts in per_device
+                ],
+                "scalar": None,
+            }
+
+        # Ab hier: wir rechnen eine Ergebnis-Serie (eine Linie)
+        base = per_device[0][1] if per_device else []
+
+        if op == "mean":
+            window_s = int(req.params.get("window_s", 10))
+            out_series = moving_average(base, window_s)
+
+        elif op == "add":
+            out_series = combine_add([pts for _, pts in per_device])
+
+        elif op == "sub":
+            if len(per_device) < 2:
+                raise HTTPException(status_code=400, detail="sub braucht mindestens 2 device_ids")
+            out_series = combine_sub(per_device[0][1], per_device[1][1])
+
+        elif op == "peak":
+            scalar = max((v for _, v in base), default=None)
+            out_series = base  # optional: wieder die Basis-Serie plotten
+
+        elif op == "quasipeak":
+            tau_c = int(req.params.get("tau_charge_ms", 500))
+            tau_d = int(req.params.get("tau_discharge_ms", 1500))
+            out_series = quasi_peak(base, tau_c, tau_d)
+
+        else:
+            raise HTTPException(status_code=400, detail=f"unknown operation: {req.operation!r}")
+
+        return {
+            "series_list": [
+                {"name": op, "series": [{"ts": ts, "value": float(v)} for ts, v in out_series]}
+            ],
+            "scalar": scalar,
+        }
     
     return app

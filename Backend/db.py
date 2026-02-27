@@ -5,7 +5,7 @@ import sqlite3
 import threading
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 @dataclass(frozen=True)
 class DeviceRow:
@@ -188,6 +188,24 @@ class Database:
                 (now, device_id, adc_raw, float(temp_c)),
             )
             self.conn.commit()
+
+    def fetch_measurements(self, device_id: str, ts_from: int, ts_to: int) -> list[tuple[int, float]]:
+        """
+        Liefert (ts, temp_c) sortiert.
+        """
+        assert self.conn is not None
+        with self._lock:
+            cur = self.conn.execute(
+                """
+                SELECT ts, temp_c
+                FROM measurements
+                WHERE device_id = ? AND ts >= ? AND ts <= ?
+                ORDER BY ts ASC;
+                """,
+                (device_id, int(ts_from), int(ts_to)),
+            )
+            rows = cur.fetchall()
+        return [(int(r[0]), float(r[1])) for r in rows]
 
     def close(self) -> None:
         if self.conn is not None:
