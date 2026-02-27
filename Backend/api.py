@@ -49,7 +49,7 @@ class MeasureStartRequest(BaseModel):
 @dataclass
 class ApiDependencies:
     db: Database
-    provisioning = ProvisioningService
+    provisioning: ProvisioningService
     commands: CommandService
 
 class AnalysisSeriesRequest(BaseModel):

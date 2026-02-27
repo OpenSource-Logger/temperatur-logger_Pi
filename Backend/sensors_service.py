@@ -96,7 +96,7 @@ class SensorService:
         dev = self.db.get_device_by_device_id(device_id)
         if dev is None:
             raise KeyError(f"Unbekannte Device_ID: {device_id}")
-        if not dev.sensor_type;
+        if not dev.sensor_type:
             raise KeyError(f"Kein sensor_type gesetzt für device_id: {device_id}")
         
         sensor_type = dev.sensor_type
