@@ -57,6 +57,9 @@ class MqttClient:
         if self._connected:
             self._client.subscribe(topic, qos=qos)
 
+    def publish(self, topic: str, payload: str, qos: int = 0, retain: bool = False) -> None:
+        self._client.publish(topic, payload=payload, qos=qos, retain=retain)
+
     # Optionaler Helper: JSON publish
     def publish_json(self, topic: str, obj: dict, qos: int = 0, retain: bool = False) -> None:
         self.publish(topic, json.dumps(obj), qos=qos, retain=retain)

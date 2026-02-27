@@ -71,5 +71,5 @@ class ProvisioningService:
         - persistiert device_id
         - sendet ack an das Gerät
         """
-        self.db.asssign_device_id(chip_id=chip_id, device_id=device_id)
+        self.db.assign_device_id(chip_id=chip_id, device_id=device_id)
         self.send_ack(chip_id=chip_id, device_id=device_id)

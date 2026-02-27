@@ -29,6 +29,7 @@ class Database:
             return
         
         self.conn = sqlite3.connect(self.path, check_same_thread=False)
+        self.conn.row_factory = sqlite3.Row
 
         self.conn.execute("PRAGMA journal_mode=WAL;")
         self.conn.execute("PRAGMA synchronous=NORMAL;")
@@ -99,7 +100,7 @@ class Database:
             )
             self.conn.commit()
 
-    def asssign_device_id(self, chip_id: str, device_id: str) -> None:
+    def assign_device_id(self, chip_id: str, device_id: str) -> None:
         """
         UI-Aktion: Chip bekommt einen Namen (=Device_ID)
         """
