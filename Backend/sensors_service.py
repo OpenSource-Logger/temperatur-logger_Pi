@@ -63,7 +63,7 @@ class SensorFactory:
         if st == "lut_v_to_v":
             # params: points = [[v,c], [v,c], ...]
             points = params.get("points", [])
-            pts_t: Tuple[Tuple[float, float], ...] = tuple((float(v), float(c) for v, c in points))
+            pts_t: Tuple[Tuple[float, float], ...] = tuple((float(v), float(c)) for v, c in points)
             return LookupTableVoltageModel(points_v_to_c=pts_t)
         
         raise KeyError(f"Unbekannter sensor_type: {sensor_type!r}")
