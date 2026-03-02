@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { Device } from "../types";
 import type { AnalysisOperation } from "../api";
 

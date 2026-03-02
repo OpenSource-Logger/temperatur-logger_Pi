@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { Device } from "../types";
 import { assignDeviceId, blink, setSensorType } from "../api";
 
