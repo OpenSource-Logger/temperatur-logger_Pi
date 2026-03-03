@@ -14,7 +14,7 @@ from mqtt_client import MqttClient
 class ProvisioningService:
     """
     - verarbeitet Discovery Hello Nachrichten
-    - sendet Ack (Device_Id) an ein bestimmtes Gerät 8chip_id)
+    - sendet Ack (Device_Id) an ein bestimmtes Gerät (chip_id)
     """
     db: Database
     mqtt: MqttClient
@@ -27,7 +27,7 @@ class ProvisioningService:
     def on_discovery_hello(self, topic: str, payload: str) -> None:
         """
         Erwartete Payload:
-        {"chip_id: "...", "ip": "...", "fw": "..."}
+        {"chip_id": "...", "ip": "...", "fw": "..."}
         Minimal: chip_id und ip.
         """
         try:
