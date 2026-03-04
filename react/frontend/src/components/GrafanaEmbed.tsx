@@ -14,7 +14,8 @@ export function GrafanaEmbed(props: Props) {
   const { selectedDeviceIds, from, to, grafanaBaseUrl, dashboardUid } = props;
 
   const src = useMemo(() => {
-    const u = new URL(`${grafanaBaseUrl}/d/${dashboardUid}/temperatur-logger`);
+    const path = `${grafanaBaseUrl.replace(/\/$/, "")}/d/${dashboardUid}/temperatur-logger`;
+    const u = new URL(path, window.location.origin);
     u.searchParams.set("orgId", "1");
     u.searchParams.set("kiosk", "tv"); // reduziert UI
     u.searchParams.set("from", from);

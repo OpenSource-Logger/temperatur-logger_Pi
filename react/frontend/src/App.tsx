@@ -144,7 +144,7 @@ export default function App() {
         selectedDeviceIds={selectedDeviceIds}
         from={from}
         to={to}
-        grafanaBaseUrl="192.168.0.98/grafana/"
+        grafanaBaseUrl="/grafana"
         dashboardUid="adn5fwm"
       />
     </div>
