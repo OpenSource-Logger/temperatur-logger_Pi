@@ -145,7 +145,7 @@ export default function App() {
         from={from}
         to={to}
         grafanaBaseUrl="/grafana"
-        dashboardUid="REPLACE_WITH_UID"
+        dashboardUid="adn5fwm"
       />
     </div>
   );
