@@ -123,11 +123,10 @@ Und ganz unten noch folgenden Block einfügen:
 [plugin.frser-sqlite-datasource]
 allowed_paths = /home/pi/temperatur-logger_Pi/Backend/
 ```
-Dann noch die Berechtigung für home-Pfade erteilen:
+Dann noch die Berechtigung für home-Pfade erteilen, hier im beschriebenen Bereich zwischen den Comments folgendes eintragen:
 ```bash
 sudo systemctl edit grafana-server
 ```
-Hier im beschriebenen Bereich zwischen den Comments folgendes eintragen:
 ```INI
 [Service]
 ProtectHome=false
