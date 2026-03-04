@@ -6,6 +6,7 @@ import threading
 import time
 from dataclasses import dataclass
 from typing import List, Optional
+from pathlib import Path
 
 @dataclass(frozen=True)
 class DeviceRow:
@@ -20,6 +21,9 @@ class DeviceRow:
 
 class Database:
     def __init__(self, path: str) -> None:
+        # Verzeichnis automatisch erstellen
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        
         self.path = path
         self.conn: Optional[sqlite3.Connection] = None
         self._lock = threading.Lock()
