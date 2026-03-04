@@ -1,2 +1,2 @@
-# Testcode_PiMQTT
-Testcode zum Einrichten der Datenbank und Empfangen von MQTT-Nachrichten in Python bzw auf dem Pi
+# Pi-Code
+Repo mit Backend in python und Frontend in typescript
