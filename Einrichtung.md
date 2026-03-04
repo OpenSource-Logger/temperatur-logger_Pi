@@ -158,3 +158,146 @@ git pull
 aus, um die Änderungen wirksam zu machen.
 
 # Frontend Build
+Node installieren:
+```bash
+sudo apt install -y nodejs npm
+```
+```bash
+cd
+```
+```bash
+cd temperatur-logger_Pi/react/frontend
+```
+```bash
+npm install
+```
+```bash
+npm run build
+```
+```bash
+sudo mkdir -p /var/www/temp-logger
+```
+```bash
+sudo rsync -a --delete dist/ /var/www/temp-logger/
+```
+
+# Nginx konfigurieren
+```bash
+sudo nano /etc/nginx/sites-available/temp-logger
+```
+```Nginx
+server {
+    listen 80;
+    server_name _;
+
+    root /var/www/temp-logger;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location = /grafana {
+        return 301 /grafana/;
+    }
+
+    location /grafana/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Prefix /grafana;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+```bash
+sudo ln -s /etc/nginx/sites-available/temp-logger /etc/nginx/sites-enabled/
+```
+```bash
+sudo rm -f /etc/nginx/sites-enabled/default
+```
+Die Konfiguration auf Syntax überprüfen:
+```bash
+sudo nginx -t
+```
+
+# Alles aktivieren:
+```bash
+sudo systemctl daemon-reload
+```
+```bash
+sudo systemctl enable temp-logger-backend
+```
+```bash
+sudo systemctl start temp-logger-backend
+```
+```bash
+sudo systemctl enable mosquitto
+```
+```bash
+sudo systemctl start mosquitto
+```
+```bash
+sudo systemctl enable grafana-server
+```
+```bash
+sudo systemctl start grafana-server
+```
+```bash
+sudo systemctl restart nginx
+```
+
+# Überprüfen
+```bash
+systemctl status mosquitto
+```
+```bash
+systemctl status temp-logger-backend
+```
+```bash
+systemctl status grafana-server
+```
+```bash
+systemctl status nginx
+```
+
+# Optional:
+IP vom Ethernet-Port festlegen, damit man auch ohne DHCP-Server direkt von seinem PC per SSH auf den Pi zugreifen kann:
+```bash
+nmcli connection show
+```
+Hier jetzt den Namen der Ethernet-Schnittstelle merken, meistens "netplan-eth0"
+```bash
+sudo nmcli connection modify "netplan-eth0" \
+ipv4.method manual \
+ipv4.address <IP>/<CIDR> \
+ipv4.gateway "" \
+ipv4.dns "" \
+ipv6.method ignore
+```
+CIDR bezieht sich auf die Subnetzmaske und bezieht sich auf die Anzahl der freien Adressen. Bei 192.168.0.15 wäre die Subnetzmaske 255.255.255.0 und die CIDR damit 24. Bei 255.255.0.0 wäre die CIDR 16. Ein Gateway und einen DNS-Server braucht man hier nicht, man ist ja direkt mit dem PC verbunden. 
+Danach die Schnittstelle noch einmal neu starten:
+```bash
+sudo nmcli connection down "netplan-eth0"
+```
+```bash
+sudo nmcli connection up "netplan-eth0"
+```
+Falls nichts an Ethernet angeschlossen war bekommt man bei "down" einen Fehler, dann muss nicht neugestartet werden.
+
+# Logs ausgeben lassen
+z.B. für grafana:
+```bash
+journalctl -u grafana-server --no-pager
+```
