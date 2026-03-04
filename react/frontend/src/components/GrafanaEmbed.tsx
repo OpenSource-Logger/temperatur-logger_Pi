@@ -14,19 +14,20 @@ export function GrafanaEmbed(props: Props) {
   const { selectedDeviceIds, from, to, grafanaBaseUrl, dashboardUid } = props;
 
   const src = useMemo(() => {
-    const path = `${grafanaBaseUrl.replace(/\/$/, "")}/d/${dashboardUid}/temperatur-logger`;
-    const u = new URL(path, window.location.origin);
-    u.searchParams.set("orgId", "1");
-    u.searchParams.set("kiosk", "tv"); // reduziert UI
-    u.searchParams.set("from", from);
-    u.searchParams.set("to", to);
-
-    // multi-select variable: var-device_id mehrfach setzen
+    const baseUrl = grafanaBaseUrl.replace(/\/$/, "");
+    const path = `${baseUrl}/d/${dashboardUid}/temperatur-logger`;
+    
+    const params = new URLSearchParams();
+    params.set("orgId", "1");
+    params.set("kiosk", "tv");
+    params.set("from", from);
+    params.set("to", to);
+    
     for (const id of selectedDeviceIds) {
-      u.searchParams.append("var-device_id", id);
+      params.append("var-device_id", id);
     }
-
-    return u.toString();
+    
+    return `${path}?${params.toString()}`;
   }, [selectedDeviceIds, from, to, grafanaBaseUrl, dashboardUid]);
 
   return (
