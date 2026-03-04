@@ -1,4 +1,5 @@
 # Raspberry Pi Inbetriebnahme
+## Betriebssystem: RaspberryPi OS Lite 64bit -> Debian Trixie 13.3
 
 ## Basis
 ```bash
@@ -59,6 +60,7 @@ python main.py
 ```bash
 sudo nano /etc/systemd/system/temp-logger-backend.service
 ```
+Diesen Inhalt einfügen:
 ```INI
 [Unit]
 Description=Temp Logger Backend
@@ -68,12 +70,65 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/temperatur-logger/Backend
+WorkingDirectory=/home/pi/temperatur-logger_Pi/Backend
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/home/pi/temperatur-logger/Backend/.venv/bin/python main.py
+ExecStart=/home/pi/temperatur-logger_Pi/Backend/.venv/bin/python main.py
 Restart=always
 RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
+```
+
+# Grafana installieren
+```bash
+sudo mkdir -p /etc/apt/keyrings
+```
+```bash
+curl -fsSL https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
+```
+```bash
+echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+ ```
+```bash
+sudo apt update
+```
+```bash
+sudo apt install -y grafana
+```
+
+# Grafana für Reverse-Proxy über Nginx vorbereiten
+```bash
+sudo nano /etc/grafana/grafana/grafana.ini
+```
+Hier folgende Zeilen ändern:
+```INI
+[server]
+protocol = http
+http_port = 3000
+domain = localhost
+root_url = %(protocol)s://%(domain)s/grafana/
+serve_from_sub_path = true
+[security]
+allow_embedding = true
+cookie_samesite = none
+[auth.anonymous]
+enabled = true
+org_role = Admin
+[plugins]
+allow_loading_unsigned_plugins = frser-sqlite-datasource
+```
+Und ganz unten noch folgenden Block einfügen:
+```INI
+[plugin.frser-sqlite-datasource]
+allowed_paths = /home/pi/temperatur-logger_Pi/Backend/
+```
+Dann noch die Berechtigung für home-Pfade erteilen:
+```bash
+sudo systemctl edit grafana-server
+```
+Hier im beschriebenen Bereich zwischen den Comments folgendes eintragen:
+```INI
+[Service]
+ProtectHome=false
 ```
