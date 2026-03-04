@@ -15,7 +15,7 @@ class MqttConfig:
 
 @dataclass(frozen=True)
 class DbConfig:
-    path: str = "measurements.db"
+    path: str = "/var/lib/temperatur-logger_Pi/measurements.db"
 
 
 @dataclass(frozen=True)
