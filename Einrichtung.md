@@ -134,6 +134,18 @@ sudo systemctl edit grafana-server
 [Service]
 ProtectHome=false
 ```
+```bash
+sudo chmod 755 /home/pi
+```
+```bash
+sudo chmod 755 /home/pi/temperatur-logger_Pi
+```
+```bash
+sudo chmod 755 /home/pi/temperatur-logger_Pi/Backend
+```
+```bash
+sudo chmod 644 /home/pi/temperatur-logger_Pi/Backend/measurements.db
+```
 
 # Frontend Build
 Node installieren:
