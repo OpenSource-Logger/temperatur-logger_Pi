@@ -102,7 +102,7 @@ sudo apt install -y grafana
 
 # Grafana für Reverse-Proxy über Nginx vorbereiten
 ```bash
-sudo nano /etc/grafana/grafana/grafana.ini
+sudo nano /etc/grafana/grafana.ini
 ```
 Hier folgende Zeilen ändern:
 ```INI
