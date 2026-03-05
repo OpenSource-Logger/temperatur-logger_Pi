@@ -294,7 +294,20 @@ und führt nochmal
 ```bash
 git pull
 ```
-aus, um die Änderungen wirksam zu machen.
+aus, um die Änderungen wirksam zu machen. Jetzt muss noch das Frontend einmal neu gebaut werden:
+```bash
+cd temperatur-logger_Pi/react/frontend/
+```
+```bash
+npm run build
+```
+```bash
+sudo rsync -a --delete dist/ /var/www/temp-logger/
+```
+Danach noch einmal neu starten:
+```bash
+sudo systemctl restart nginx
+```
 
 # Optional:
 IP vom Ethernet-Port festlegen, damit man auch ohne DHCP-Server direkt von seinem PC per SSH auf den Pi zugreifen kann:
