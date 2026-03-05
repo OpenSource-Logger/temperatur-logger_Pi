@@ -135,31 +135,6 @@ sudo systemctl edit grafana-server
 ProtectHome=false
 ```
 
-# Grafana-Dashboard bauen
-Unter <Pi-IP>/grafana/ muss man unter Administration -> Plugins & Data -> Plugins das Plugin SQLite von frser installieren, dann ein neues Dashboard erstellen und dafür eine Datenquelle aus diesem Plugin und diesem Pfad anlegen `/home/pi/temperatur-logger_Pi/Backend/measurements.db`. 
-Dann muss man noch den Visualisierungsstil festlegen:
-```json
-SELECT
-  datetime(m.ts, 'unixepoch') AS time,
-  m.temp_c AS value,
-  COALESCE(d.device_id, m.device_id) AS metric
-FROM measurements m
-LEFT JOIN devices d ON d.device_id = m.device_id
-WHERE $__timeFilter(datetime(m.ts, 'unixepoch'))
-ORDER BY m.ts;
-```
-Das Dashboard wird dann gespeichert und wenn man das Dashboard dann auswählt sieht man in der url /grafana/d/`uid`/temp-logger/...
-Diese UID trägt man dan in der App.tsx anstatt von `Replace with UID` in Zeile 148 ein.
-Dann geht man nochmal in den Ordner
-```bash
-cd /home/pi/temperatur-logger_Pi/
-```
-und führt nochmal
-```bash
-git pull
-```
-aus, um die Änderungen wirksam zu machen.
-
 # Frontend Build
 Node installieren:
 ```bash
@@ -235,6 +210,15 @@ Die Konfiguration auf Syntax überprüfen:
 sudo nginx -t
 ```
 
+# Mosquitto konfigurieren
+```bash
+sudo nano /etc/mosquitto/conf.d/temp-logger.conf
+```
+```INI
+listener 1883
+allow_anonymous true
+```
+
 # Alles aktivieren:
 ```bash
 sudo systemctl daemon-reload
@@ -274,6 +258,31 @@ systemctl status grafana-server
 ```bash
 systemctl status nginx
 ```
+
+# Grafana-Dashboard bauen
+Unter <Pi-IP>/grafana/ muss man unter Administration -> Plugins & Data -> Plugins das Plugin SQLite von frser installieren, dann ein neues Dashboard erstellen und dafür eine Datenquelle aus diesem Plugin und diesem Pfad anlegen `/home/pi/temperatur-logger_Pi/Backend/measurements.db`. 
+Dann muss man noch den Visualisierungsstil festlegen:
+```json
+SELECT
+  datetime(m.ts, 'unixepoch') AS time,
+  m.temp_c AS value,
+  COALESCE(d.device_id, m.device_id) AS metric
+FROM measurements m
+LEFT JOIN devices d ON d.device_id = m.device_id
+WHERE $__timeFilter(datetime(m.ts, 'unixepoch'))
+ORDER BY m.ts;
+```
+Das Dashboard wird dann gespeichert und wenn man das Dashboard dann auswählt sieht man in der url /grafana/d/`uid`/temp-logger/...
+Diese UID trägt man dan in der App.tsx anstatt von `Replace with UID` in Zeile 148 ein.
+Dann geht man nochmal in den Ordner
+```bash
+cd /home/pi/temperatur-logger_Pi/
+```
+und führt nochmal
+```bash
+git pull
+```
+aus, um die Änderungen wirksam zu machen.
 
 # Optional:
 IP vom Ethernet-Port festlegen, damit man auch ohne DHCP-Server direkt von seinem PC per SSH auf den Pi zugreifen kann:
