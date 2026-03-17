@@ -54,7 +54,7 @@ def main() -> None:
     mqtt.connect_and_start()
 
     # FastAPI App
-    deps = ApiDependencies(db=db, provisioning=provisioning, commands=commands)
+    deps = ApiDependencies(db=db, provisioning=provisioning, commands=commands, sensors=sensors)
     app = create_app(deps)
 
 

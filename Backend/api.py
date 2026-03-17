@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field
 from db import Database
 from provisioning import ProvisioningService
 from commands import CommandService
+from sensors_service import SensorService
 
 
 # ---------- Request/Response Models ----------
@@ -51,6 +52,7 @@ class ApiDependencies:
     db: Database
     provisioning: ProvisioningService
     commands: CommandService
+    sensors: SensorService
 
 class AnalysisSeriesRequest(BaseModel):
     device_ids: List[str]
