@@ -192,6 +192,7 @@ class Database:
                 (now, device_id, adc_raw, float(temp_c)),
             )
             self.conn.commit()
+            logging.info(f"DB insert successful for device_id: '{device_id}'")
 
     def fetch_measurements(self, device_id: str, ts_from: int, ts_to: int) -> list[tuple[int, float]]:
         """

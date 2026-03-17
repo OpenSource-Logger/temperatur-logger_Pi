@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import time
+import logging
 from dataclasses import dataclass
 
 from config import CFG, Topics
@@ -30,6 +31,7 @@ class IngestService:
             device_id = self._device_id_from_adc_topic(topic)
             adc_raw = self._parse_adc(payload)
             temp_c = self.sensors.temperature_from_adc(device_id=device_id, adc_raw=adc_raw)
+            logging.info(f"Calculated temp: {temp_c}")
 
             # ts: serverseitig "jetzt" (oder optional aus payload)
             self.db.insert_measurement(device_id=device_id, temp_c=temp_c, adc_raw=adc_raw, ts=int(time.time()))
