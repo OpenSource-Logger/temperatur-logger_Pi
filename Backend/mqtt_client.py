@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Callable, Dict, Optional
 
@@ -67,17 +68,20 @@ class MqttClient:
     def _on_connect(self, client, userdata, flags, rc, properties=None) -> None:
         if rc == 0:
             self._connected = True
+            logging.info(f"MQTT connected successfully to {self.settings.host}:{self.settings.port}")
             # Alle registrierten Subscriptions jetzt aktivieren
             for topic in self._handlers.keys():
                 client.subscribe(topic, qos=0)
+                logging.info(f"Subscribed to topic: {topic}")
         else:
             # rc != 0: Verbindung fehlgeschlagen
             self._connected = False
-            print(f"MQTT connect failed: rc={rc}")
+            logging.error(f"MQTT connect failed: rc={rc}")
 
     def _on_message(self, client, userdata, msg) -> None:
         topic = msg.topic
         payload = msg.payload.decode(errors="replace")
+        logging.info(f"MQTT message recieved: topic='{topic}', payload='{payload}'")
 
         # Dispatch: 1) exakter Match, 2) wildcard-matches
         # paho liefert beim Subscribe mit Wildcards trotzdem msg.topic als exaktes Topic.

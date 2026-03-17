@@ -62,8 +62,8 @@ class Topics:
         return Topics.DISCOVERY_HELLO.format(server=server)
     
     @staticmethod
-    def discovery_ack(server: str, chip_id: str) -> str:
-        return Topics.DISCOVERY_ACK.format(server=server, chip_id=chip_id)
+    def discovery_ack(server: str, device_id: str) -> str:
+        return Topics.DISCOVERY_ACK.format(server=server, device_id=device_id)
     
     @staticmethod
     def adc(server: str, device_id: str) -> str:

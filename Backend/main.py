@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import uvicorn
+import logging
 
 from config import CFG
 from db import Database
@@ -12,6 +13,7 @@ from ingest import IngestService
 from commands import CommandService
 from api import create_app, ApiDependencies
 
+logging.basicConfig(level=logging.INFO)
 
 def build_services():
     # DB

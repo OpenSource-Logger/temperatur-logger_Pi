@@ -4,6 +4,7 @@ from __future__ import annotations
 import sqlite3
 import threading
 import time
+import logging
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -78,6 +79,7 @@ class Database:
 # ---------------Device operations----------------
 
     def upsert_device_seen(self, chip_id: str, ip: Optional[str], ts: Optional[int] = None) -> None:
+        logging.info(f"DB upser_device_seen called: chip_id='{chip_id}', ip='{ip}'")
         """
         Wird bei Discovery 'hello' genutzt:
         - legt Gerät an, falls neu
@@ -99,6 +101,7 @@ class Database:
             (chip_id, ip, now, now),
             )
             self.conn.commit()
+            logging.info(f"DB upsert successful for chip_id='{chip_id}'")
 
     def assign_device_id(self, chip_id: str, device_id: str) -> None:
         """

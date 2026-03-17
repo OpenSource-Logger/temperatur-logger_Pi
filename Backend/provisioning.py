@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -32,10 +33,11 @@ class ProvisioningService:
         """
         try:
             data = json.loads(payload)
+            logging.info(f"Parsed JSON data: {data}")
         except json.JSONDecodeError:
             # Fallback: falls erstmal nur die IP gesendet wird
             # dann fehlt chip_id -> ohne chip_id kann das Gerät nicht eindeutig identifiziert werden
-            print(f"Discovery hello: ungültiges JSON: {payload!r}")
+            logging.error(f"Discovery hello: ungültiges JSON: {payload!r}")
             return
         
         chip_id = str(data.get("chip_id") or "").strip()
@@ -43,9 +45,10 @@ class ProvisioningService:
         ip_str: Optional[str] = str(ip).strip() if ip is not None else None
 
         if not chip_id:
-            print(f"Discovery hello: chip_id fehlt: {payload!r}")
+            logging.error(f"Discovery hello: chip_id fehlt: {payload!r}")
             return
         
+        logging.info(f"Upserting device: chip_id='{chip_id}', ip='{ip_str}'")
         # Gerät als "gesehen" speichern/aktualisieren
         self.db.upsert_device_seen(chip_id=chip_id, ip=ip_str)
 
