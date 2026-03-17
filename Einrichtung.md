@@ -276,12 +276,11 @@ Unter <Pi-IP>/grafana/ muss man unter Administration -> Plugins & Data -> Plugin
 Dann muss man noch den Visualisierungsstil festlegen:
 ```json
 SELECT
-  datetime(m.ts, 'unixepoch') AS time,
+  m.ts AS time,
   m.temp_c AS value,
-  COALESCE(d.device_id, m.device_id) AS metric
+  m.device_id AS metric
 FROM measurements m
-LEFT JOIN devices d ON d.device_id = m.device_id
-WHERE $__timeFilter(datetime(m.ts, 'unixepoch'))
+WHERE m.ts >= strftime('%s', datetime('now', '-7 days'))
 ORDER BY m.ts;
 ```
 Das Dashboard wird dann gespeichert und wenn man das Dashboard dann auswählt sieht man in der url /grafana/d/`uid`/temp-logger/...
