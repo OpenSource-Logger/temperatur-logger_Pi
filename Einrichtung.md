@@ -46,6 +46,9 @@ cd Backend
 python3 -m venv .venv
 ```
 ```bash
+. .venv/bin/activate
+```
+```bash
 pip install -U pip
 ```
 ```bash
@@ -99,7 +102,7 @@ sudo apt install -y grafana
 
 # Grafana für Reverse-Proxy über Nginx vorbereiten
 ```bash
-sudo nano /etc/grafana/grafana/grafana.ini
+sudo nano /etc/grafana/grafana.ini
 ```
 Hier folgende Zeilen ändern:
 ```INI
@@ -131,31 +134,18 @@ sudo systemctl edit grafana-server
 [Service]
 ProtectHome=false
 ```
-
-# Grafana-Dashboard bauen
-Unter <Pi-IP>/grafana/ muss man unter Administration -> Plugins & Data -> Plugins das Plugin SQLite von frser installieren, dann ein neues Dashboard erstellen und dafür eine Datenquelle aus diesem Plugin und diesem Pfad anlegen `/home/pi/temperatur-logger_Pi/Backend/measurements.db`. 
-Dann muss man noch den Visualisierungsstil festlegen:
-```json
-SELECT
-  datetime(m.ts, 'unixepoch') AS time,
-  m.temp_c AS value,
-  COALESCE(d.device_id, m.device_id) AS metric
-FROM measurements m
-LEFT JOIN devices d ON d.device_id = m.device_id
-WHERE $__timeFilter(datetime(m.ts, 'unixepoch'))
-ORDER BY m.ts;
-```
-Das Dashboard wird dann gespeichert und wenn man das Dashboard dann auswählt sieht man in der url /grafana/d/`uid`/temp-logger/...
-Diese UID trägt man dan in der App.tsx anstatt von `Replace with UID` in Zeile 148 ein.
-Dann geht man nochmal in den Ordner
 ```bash
-cd /home/pi/temperatur-logger_Pi/
+sudo chmod 755 /home/pi
 ```
-und führt nochmal
 ```bash
-git pull
+sudo chmod 755 /home/pi/temperatur-logger_Pi
 ```
-aus, um die Änderungen wirksam zu machen.
+```bash
+sudo chmod 755 /home/pi/temperatur-logger_Pi/Backend
+```
+```bash
+sudo chmod 644 /home/pi/temperatur-logger_Pi/Backend/measurements.db
+```
 
 # Frontend Build
 Node installieren:
@@ -232,6 +222,15 @@ Die Konfiguration auf Syntax überprüfen:
 sudo nginx -t
 ```
 
+# Mosquitto konfigurieren
+```bash
+sudo nano /etc/mosquitto/conf.d/temp-logger.conf
+```
+```INI
+listener 1883
+allow_anonymous true
+```
+
 # Alles aktivieren:
 ```bash
 sudo systemctl daemon-reload
@@ -270,6 +269,44 @@ systemctl status grafana-server
 ```
 ```bash
 systemctl status nginx
+```
+
+# Grafana-Dashboard bauen
+Unter <Pi-IP>/grafana/ muss man unter Administration -> Plugins & Data -> Plugins das Plugin SQLite von frser installieren, dann ein neues Dashboard erstellen und dafür eine Datenquelle aus diesem Plugin und diesem Pfad anlegen `/home/pi/temperatur-logger_Pi/Backend/measurements.db`. 
+Dann muss man noch den Visualisierungsstil festlegen:
+```json
+SELECT
+  datetime(m.ts, 'unixepoch') AS time,
+  m.temp_c AS value,
+  COALESCE(d.device_id, m.device_id) AS metric
+FROM measurements m
+LEFT JOIN devices d ON d.device_id = m.device_id
+WHERE $__timeFilter(datetime(m.ts, 'unixepoch'))
+ORDER BY m.ts;
+```
+Das Dashboard wird dann gespeichert und wenn man das Dashboard dann auswählt sieht man in der url /grafana/d/`uid`/temp-logger/...
+Diese UID trägt man dan in der App.tsx anstatt von `Replace with UID` in Zeile 148 ein.
+Dann geht man nochmal in den Ordner
+```bash
+cd /home/pi/temperatur-logger_Pi/
+```
+und führt nochmal
+```bash
+git pull
+```
+aus, um die Änderungen wirksam zu machen. Jetzt muss noch das Frontend einmal neu gebaut werden:
+```bash
+cd temperatur-logger_Pi/react/frontend/
+```
+```bash
+npm run build
+```
+```bash
+sudo rsync -a --delete dist/ /var/www/temp-logger/
+```
+Danach noch einmal neu starten:
+```bash
+sudo systemctl restart nginx
 ```
 
 # Optional:
