@@ -107,6 +107,29 @@ def create_app(deps: ApiDependencies) -> FastAPI:
         
         return {"ok": True}
     
+    @app.post("/devices/{device_id}/sensor")
+    def set_sensor_type(device_id: str, req: SetSensorTypeRequest):
+        dev = deps.db.get_device_by_device_id(device_id)
+        if dev is None:
+            raise HTTPException(status_code=404, detail="device_id unbekannt")
+
+        deps.db.set_sensor_type(device_id=device_id, sensor_type=req.sensor_type, sensor_params=req.sensor_params)
+        deps.sensors.invalidate_cache_for_device(device_id)
+        return {"ok": True}
+    
+    @app.post("/devices/{device_id}/blink")
+    def blink_device_led(device_id: str, req: BlinkRequest):
+        dev = deps.db.get_device_by_device_id(device_id)
+        if dev is None:
+            raise HTTPException(status_code=404, detail="device_id unbekannt")
+
+        deps.commands.blink_led(
+            device_id=device_id,
+            duration_ms=req.duration_ms,
+            period_ms=req.period_ms,
+        )
+        return {"ok": True}
+    
     # ----- Measurement control (global) -----
 
     @app.post("/measure/start")
